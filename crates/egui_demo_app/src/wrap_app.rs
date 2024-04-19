@@ -104,10 +104,10 @@ impl Anchor {
             Self::Demo,
             Self::EasyMarkEditor,
             #[cfg(feature = "http")]
-            Self::Http,
+                Self::Http,
             Self::Clock,
             #[cfg(any(feature = "glow", feature = "wgpu"))]
-            Self::Custom3d,
+                Self::Custom3d,
             Self::Rendering,
         ]
     }
@@ -170,13 +170,45 @@ pub struct WrapApp {
     dropped_files: Vec<egui::DroppedFile>,
 }
 
+fn setup_custom_fonts(ctx: &egui::Context) {
+    // Start with the default fonts (we will be adding to them rather than replacing them).
+    let mut fonts = egui::FontDefinitions::default();
+
+    // Install my own font (maybe supporting non-latin characters).
+    // .ttf and .otf files supported.
+    fonts.font_data.insert(
+        "my_font".to_owned(),
+        egui::FontData::from_static(include_bytes!(
+            "LXGWWenKai-Light.ttf"
+        )),
+    );
+
+    // Put my font first (highest priority) for proportional text:
+    fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "my_font".to_owned());
+
+    // Put my font as last fallback for monospace:
+    fonts
+        .families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .push("my_font".to_owned());
+
+    // Tell egui to use these fonts:
+    ctx.set_fonts(fonts);
+}
+
 impl WrapApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // This gives us image support:
+        setup_custom_fonts(&cc.egui_ctx);
         egui_extras::install_image_loaders(&cc.egui_ctx);
 
         #[allow(unused_mut)]
-        let mut slf = Self {
+            let mut slf = Self {
             state: State::default(),
 
             #[cfg(any(feature = "glow", feature = "wgpu"))]
@@ -209,9 +241,9 @@ impl WrapApp {
             ),
             #[cfg(feature = "http")]
             (
-                "⬇ HTTP",
-                Anchor::Http,
-                &mut self.state.http as &mut dyn eframe::App,
+            "⬇ HTTP",
+            Anchor::Http,
+            &mut self.state.http as &mut dyn eframe::App,
             ),
             (
                 "🕑 Fractal Clock",
@@ -220,9 +252,9 @@ impl WrapApp {
             ),
             #[cfg(feature = "image_viewer")]
             (
-                "🖼 Image Viewer",
-                Anchor::ImageViewer,
-                &mut self.state.image_viewer as &mut dyn eframe::App,
+            "🖼 Image Viewer",
+            Anchor::ImageViewer,
+            &mut self.state.image_viewer as &mut dyn eframe::App,
             ),
         ];
 
